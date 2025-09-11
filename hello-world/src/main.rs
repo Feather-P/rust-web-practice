@@ -1,9 +1,13 @@
+mod routers;
 mod utils;
+mod handlers;
 
-use axum::{Router, routing::get};
+use axum::{Router};
 use log::{error, info, warn};
 use tokio;
 use std::{process};
+
+use crate::routers::api::api_route;
 
 #[tokio::main]
 async fn main() {
@@ -12,10 +16,8 @@ async fn main() {
         process::exit(1);
     }
 
-    async fn helloworld() -> String {
-        "Ciallo~ World".to_string()
-    }
-    let app: Router<()> = Router::new().route("/", get(helloworld));
+    let app: Router<()> = Router::new()
+        .merge(api_route());
 
     let listener = match tokio::net::TcpListener::bind("127.0.0.1:8999").await {
         Ok(listener) => {
@@ -27,7 +29,15 @@ async fn main() {
             process::exit(1);
         }
     };
-    axum::serve(listener, app).await.unwrap();
+    match axum::serve(listener, app).await {
+        Ok(_) => {
+            info!("Server started successfully");
+        }
+        Err(e) => {
+            error!("Server error: {}", e);
+            process::exit(1);
+        }
+    }
 }
 #[cfg(test)]
 mod tests {}
