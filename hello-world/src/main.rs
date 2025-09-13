@@ -1,6 +1,9 @@
 mod routers;
 mod utils;
 mod handlers;
+mod storage;
+mod models;
+mod database;
 
 use axum::{Router};
 use log::{error, info, warn};
@@ -8,13 +11,13 @@ use tokio;
 use std::{process};
 
 use crate::routers::api::api_route;
-
+use crate::database::connection;
 #[tokio::main]
 async fn main() {
     if let Err(e) = utils::logger::init_logger() {
         eprintln!("Failed to initialize logger: {}", e);
         process::exit(1);
-    }
+    } // 初始化日志记录器
 
     let app: Router<()> = Router::new()
         .merge(api_route());
