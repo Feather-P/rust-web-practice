@@ -1,5 +1,5 @@
 use std::sync::{Mutex};
-use rusqlite::{Connection};
+use tokio_rusqlite::{Connection};
 use once_cell::sync::Lazy;
 
 use super::error::DatabaseError;
@@ -7,9 +7,9 @@ use super::error::DatabaseError;
 static DB_INSTANCE: Lazy<Mutex<Option<Connection>>>
 = Lazy::new(| | Mutex::new(None));
 
-pub fn connect_database(path: Option<&str>) -> Result<(), DatabaseError> {
+pub async  fn connect_database(path: Option<&str>) -> Result<(), DatabaseError> {
     let db_path = path.unwrap_or("database.db");
-    let conn = Connection::open(db_path)?;
+    let conn = Connection::open(db_path).await?;
     let mut db_static = match DB_INSTANCE.lock() {
         Ok(guard) => guard,
         Err(_) => return Err(DatabaseError::LockError("Failed to acquire database pointer lock.".to_string()))
@@ -66,7 +66,7 @@ impl std::ops::Deref for DatabaseGuard {
     }
 }
 
-pub fn close_database() -> Result<(), DatabaseError> {
+pub async fn close_database() -> Result<(), DatabaseError> {
     let mut db_static = match DB_INSTANCE.lock() {
         Ok(guard) => guard,
         Err(_) => return Err(DatabaseError::LockError("Failed to acquire database pointer lock".to_string()))
@@ -74,12 +74,9 @@ pub fn close_database() -> Result<(), DatabaseError> {
     
     // 关闭数据库连接
     if let Some(conn) = db_static.take() {
-        match conn.close() {
+        match conn.close().await {
             Ok(()) => return Ok(()),
-            Err((conn,e )) => {
-                *db_static = Some(conn);
-                return Err(DatabaseError::ConnectionError(e))
-            }
+            Err(e) => return Err(DatabaseError::ConnectionError(e))
         }
     } 
 

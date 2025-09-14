@@ -1,6 +1,6 @@
 #[derive(Debug)]
 pub enum DatabaseError {
-    ConnectionError(rusqlite::Error),
+    ConnectionError(tokio_rusqlite::Error),
     LockError(String),
     NotInitializedError
 }
@@ -18,8 +18,8 @@ impl std::fmt::Display for DatabaseError {
 impl std::error::Error for DatabaseError {
 }
 
-impl From<rusqlite::Error> for DatabaseError {
-    fn from(err: rusqlite::Error) -> Self {
+impl From<tokio_rusqlite::Error> for DatabaseError {
+    fn from(err: tokio_rusqlite::Error) -> Self {
         DatabaseError::ConnectionError(err)
     }
 }
