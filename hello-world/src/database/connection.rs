@@ -72,6 +72,17 @@ pub fn close_database() -> Result<(), DatabaseError> {
         Err(_) => return Err(DatabaseError::LockError("Failed to acquire database pointer lock".to_string()))
     };
     
+    // 关闭数据库连接
+    if let Some(conn) = db_static.take() {
+        match conn.close() {
+            Ok(()) => return Ok(()),
+            Err((conn,e )) => {
+                *db_static = Some(conn);
+                return Err(DatabaseError::ConnectionError(e))
+            }
+        }
+    } 
+
     // 直接把静态内部option设置为None视为关闭数据库连接
     *db_static = None;
     
