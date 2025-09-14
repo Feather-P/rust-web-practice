@@ -54,6 +54,18 @@ impl DatabaseGuard {
     }
 }
 
+impl std::ops::Deref for DatabaseGuard {
+    type Target = Connection;
+    fn deref(&self) -> &Self::Target {
+        match self.get() {
+            Ok(conn) => conn,
+            Err(e) => {
+                panic!("Database guard error: {:?}", e)
+            }
+        }
+    }
+}
+
 pub async fn close_database() -> Result<(), DatabaseError> {
     let mut db_static = match DB_INSTANCE.lock() {
         Ok(guard) => guard,
