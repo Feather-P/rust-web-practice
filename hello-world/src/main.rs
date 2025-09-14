@@ -15,7 +15,7 @@ use crate::database::connection;
 #[tokio::main]
 async fn main() {
     const ADDRESS: &str = "127.0.0.1:8999";
-    
+
     if let Err(e) = utils::logger::init_logger() {
         eprintln!("Failed to initialize logger: {}", e);
         process::exit(1);
@@ -44,5 +44,6 @@ async fn main() {
         }
     }
 }
+
 #[cfg(test)]
 mod tests {}
