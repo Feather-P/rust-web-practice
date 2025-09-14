@@ -7,7 +7,7 @@ use super::error::DatabaseError;
 static DB_INSTANCE: Lazy<Mutex<Option<Connection>>>
 = Lazy::new(| | Mutex::new(None));
 
-pub async fn connect_database(path: Option<&str>) -> Result<(), DatabaseError> {
+pub fn connect_database(path: Option<&str>) -> Result<(), DatabaseError> {
     let db_path = path.unwrap_or("database.db");
     let conn = Connection::open(db_path)?;
     let mut db_static = match DB_INSTANCE.lock() {
@@ -20,7 +20,7 @@ pub async fn connect_database(path: Option<&str>) -> Result<(), DatabaseError> {
     Ok(())
 }
 
-pub async fn get_database() -> Result<DatabaseGuard, DatabaseError> {
+pub fn get_database() -> Result<DatabaseGuard, DatabaseError> {
     let db_static = match DB_INSTANCE.lock() {
         Ok(guard) => guard,
         Err(_) => return Err(DatabaseError::LockError("Failed to acquire database pointer lock".to_string()))
@@ -66,7 +66,7 @@ impl std::ops::Deref for DatabaseGuard {
     }
 }
 
-pub async fn close_database() -> Result<(), DatabaseError> {
+pub fn close_database() -> Result<(), DatabaseError> {
     let mut db_static = match DB_INSTANCE.lock() {
         Ok(guard) => guard,
         Err(_) => return Err(DatabaseError::LockError("Failed to acquire database pointer lock".to_string()))
