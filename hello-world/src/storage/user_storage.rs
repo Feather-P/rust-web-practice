@@ -6,7 +6,7 @@ pub async fn init_user_table() -> Result<(), DatabaseError> {
     connect_database(None).await?;
 
     {
-        let db_guard = get_database()?;
+        let db_guard = get_database().await?;
         let conn = db_guard.get()?;
         conn.call(|conn| {
             conn.execute(
